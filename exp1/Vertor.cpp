@@ -1,3 +1,9 @@
+#include<iostream>
+#include<math.h>
+#include<random>
+
+using namespace std;
+
 typedef int Rank;
 #define DEFAULT_CAPACITY 3
 template <typename T> class Vector{
@@ -16,10 +22,10 @@ template <typename T> class Vector{
         void heapSort(Rank lo ,Rank hi);
     public:
         Vector(int c =DEFAULT_CAPACITY){_elem = new T[_capacity = c ];_size=0;}//默认
-        Vector(T* A,Rank lo ,Rank hi){copyFrom(A,lo,hi)}//数组区间复制
-        Vector(T* A, Rank n ){copyFrom(A, 0,n)}//数组整体复制
-        Vector(Vector<T> const& V,Rank lo,Rank hi){copyFrom(V._elem,lo,hi)}
-        Vector(Vector<T> const& V){copyFrom(V._elem,V._size)}
+        Vector(T* A,Rank lo ,Rank hi){copyFrom(A,lo,hi);}//数组区间复制
+        Vector(T* A, Rank n ){copyFrom(A, 0,n);}//数组整体复制
+        Vector(Vector<T> const& V,Rank lo,Rank hi){copyFrom(V._elem,lo,hi);}
+        Vector(Vector<T> const& V){copyFrom(V._elem,0,V._size);}
         ~Vector(){delete [] _elem; }
         Rank size() const{return _size;}
         bool empty() const {return _size <=0;}//判空
@@ -36,11 +42,12 @@ template <typename T> class Vector{
         Rank insert(Rank r , T const& e);
         Rank insert(T const& e){ return insert(_size,e);}
         void sort(Rank lo , Rank hi);
-        void sort(){sort(0,_size)};
+        void sort(){sort(0,_size);};
         void unsort(Rank lo ,Rank hi);
         void unsort(){ unsort(0,_size);}
         int deduplicate();//无序去重
         int uniquify();//有序去重
+        void setsize(int n){ _size=n;};
 //遍历
         void traverse(void(*)(T&));//遍历（使用函数指针，只读或局部修改）
         template<typename VST> void traverse(VST&);//遍历（使用函数对象，可全局性修改）
@@ -97,17 +104,16 @@ bool Vector<T>::bubble(Rank lo ,Rank hi){
 template<typename T>
 void Vector<T>::bubbleSort(Rank lo , Rank hi ){
     bool sorted=false;
+
     while(!sorted){
-        int le=lo;
         sorted=true;
-        while(le<hi){
+        for(int le = lo ; le <hi-1;le++){
             if(bubble(le,le+1)){
-                _elem[le]=_elem[++le];
-                sorted=false;
+            swap(_elem[le],_elem[le+1]);
+            sorted=false;
             }
-        hi--;
         }
-        
+        hi--;
     }
 }
 
@@ -127,7 +133,7 @@ void Vector<T>::merge(Rank lo , Rank mi , Rank hi ){
         _elem[l++]=A[i++];
     }
     while(j<hi){
-        _elme=[l++]=A[j++];
+        _elem[l++]=A[j++];
     }
     
 }
@@ -136,9 +142,9 @@ void Vector<T>::merge(Rank lo , Rank mi , Rank hi ){
 //归并排序算法
 template<typename T>
 void Vector<T>::mergeSort(Rank lo ,Rank hi){
-    int mi;
+    Rank mi;
     if(lo<hi){
-        mi=(hi-lo)/2
+        mi=(hi-lo)/2;
         mergeSort(lo,mi);
         mergeSort(mi,hi);
         merge(lo,mi,hi);
@@ -149,8 +155,8 @@ void Vector<T>::mergeSort(Rank lo ,Rank hi){
 //轴点构造算法
 template<typename T>
 Rank Vector<T> ::partition(Rank lo,Rank hi ){
-    Rank m=_elem[lo];
-    Vector<T> A(*this,_size);
+    T m=_elem[lo];
+    Vector<T> A(_elem,_size);
     int i=lo,j=hi-1;
     for(int k=lo+1;k<hi;k++){
         if(A[k]<m) _elem[lo++]=A[k];
@@ -164,17 +170,18 @@ Rank Vector<T> ::partition(Rank lo,Rank hi ){
 template<typename T>
 void Vector<T>::quickSort(Rank lo ,Rank hi ){
     if(lo<hi){
-        p=partition(lo,hi);
+        Rank p=partition(lo,hi);
         quickSort(lo,p);
         quickSort(p,hi);
     }
+    else return;
 }
 
 
 //堆排序
 template<typename T>
 void Vector<T>::heapSort(Rank lo,Rank hi ){
-    ...
+    //...
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -185,7 +192,7 @@ template<typename T>
 int Vector<T>::disordered() const{
     int sorted = 1;
     for(int i = 0 ; i < _size-1 ; i++){
-        if(_elem[i]>_elem[i+!]){
+        if(_elem[i]>_elem[i+1]){
             sorted = -1 ;
             return sorted;
         }
@@ -200,12 +207,12 @@ Rank Vector<T>::find(T const& e,Rank lo ,Rank hi)const{
     Rank i=lo;
     bool finded=false;
     while(i<hi && !finded){
-        if(e=_elem[i++]){
+        if(e==_elem[i++]){
             finded = true;
             return i-1;
         }
     }
-    return -1
+    return -1;
 
 }
 
@@ -264,21 +271,24 @@ int Vector<T>::remove(Rank lo ,Rank hi){
 
 template<typename T>
 Rank Vector<T>::insert(Rank r , T const& e){
-    expand();
-    T* oldElem=_elem;
-    _elem=new T[capacity<<=1];
-    for(int i ; i < _size+1 ; i++){
-        if (i=r) _elem[i]=oldElem[i++];
-        else _elem[i]=oldElem[i];
+    
+    Vector<T> A(_elem,_size);
+    _elem=new T[_capacity<<=1];_size=0;
+    Rank i=0;
+    while(i<A.size()){
+        if(_size!=r){
+        _elem[_size++]=A[i++];
+        }
+        else{_elem[_size++]=e;}
     }
-    _size++;shrink();
-    return r
+    
+    return r;
 }
 
 
 template<typename T>
 void  Vector<T>::sort(Rank lo , Rank hi){
-    quickSort(lo,hi);
+    bubbleSort(lo,hi);
 }
 
 template<typename T>
@@ -289,22 +299,22 @@ void Vector<T>::unsort(Rank lo ,Rank hi){
     }
 }
 
-
+//无序去重
 template<typename T>int Vector<T>::deduplicate(){
     int oldSize = _size;
     Rank i = 0;
-    while(i<_size) (0>find(_elem[i],i,oldSize))?
+    while(i<_size) (0>find(_elem[i],i+1,oldSize))?
     i++:remove(i);
     return oldSize-_size;
 }
 
-
+//有序去重
 
 template<typename T> int Vector<T>::uniquify(){
     Rank i = 0, j = 0;
     while(j++<_size){
         if(_elem[i]!=_elem[j]) 
-         _elem[i++]=elem[j];
+         _elem[i++]=_elem[j];
     }_size=++i;shrink();
     return j-i;
 }
@@ -315,3 +325,75 @@ void swap(T*p1,T*p2){
     *p1 = *p2;
     *p2 = temp;
 }
+
+//遍历
+template<typename T>
+void Vector<T>::traverse(void(*visit)(T&)){
+    for(int i = 0;i<_size;i++){
+        visit(_elem[i]);
+    }
+}
+template<typename T>
+template<typename VST>
+void Vector<T>::traverse(VST &visit){
+    for(int i = 0;i<_size;i++){
+        visit(_elem[i]);
+    }
+}
+
+
+class Complex{
+private:
+    double _real;
+    double _image;
+public:
+    Complex(double r=0 ,double i=0){_real=r;_image=i;};
+    void print(){cout<<_real<<"+"<<_image<<"i";}
+    void reset(double r , double i ){_real = r ; _image = i;};
+    bool operator!=(const Complex& other) const{ return (_real != other._real) || (_image != other._image);}
+    bool operator==(const Complex& other) const{ return (_real == other._real) && (_image == other._image);};
+    bool operator<(const Complex& other) const{ if(_real*_real+_image*_image==other._real*other._real+other._image*other._image) return _real<other._real;
+        else return _real*_real+_image*_image<other._real*other._real+other._image*other._image;}
+    bool operator>(const Complex& other) const{if(_real*_real+_image*_image==other._real*other._real+other._image*other._image) return _real>other._real;
+        else return _real*_real+_image*_image>other._real*other._real+other._image*other._image;}
+};//Complex
+
+void set1(Complex a){
+    a.reset(1,2);
+}
+void allprint1(Complex a){
+    // cout<<a<<" ";
+    a.print();
+    cout<<" ";
+}
+
+int main(){
+    Vector<Complex> A(10);
+    for(int i;i<10;i++){
+        int j=rand()%100,k=rand()%100;
+        A[i].reset(j,k);  
+    }
+    A.setsize(10);
+    A.sort();
+    A.traverse(allprint1);
+    cout<<"\n";
+    Complex B(10,10);
+    //插入
+    A.insert(3,B);
+    A.insert(4,B);
+    A.insert(5,B);
+    A.traverse(allprint1);
+    cout<<"\n";
+    //置乱
+    // A.unsort();
+    // A.traverse(allprint1);
+    cout<<"\n"<<A.find(B)<<"\n";
+    //删除
+    // A.remove(0);
+    // A.traverse(allprint1);
+    //无序去重
+    // A.deduplicate();
+    //有序去重
+    A.uniquify();
+    A.traverse(allprint1);
+};
