@@ -30,7 +30,7 @@ template <typename T> class Vector{
         { return (0 >= _size)? -1:search(e,(Rank)0,(Rank)_size);}
         Rank search(T const& e,Rank lo ,Rank hi )const;//有序向量区间查找
         T& operator[](Rank r ) const;
-        Vector<T> &a operator=(Vector<T> const&);
+        Vector<T> & operator=(Vector<T> const& V);
         T remove(Rank r);
         int remove(Rank lo,Rank hi );
         Rank insert(Rank r , T const& e);
@@ -48,6 +48,11 @@ template <typename T> class Vector{
 
 
 
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//#######保护变量定义###
+
 //复制
 template<typename T>
 void Vector<T>::copyFrom(T* const A,Rank lo,Rank hi){
@@ -61,18 +66,23 @@ void Vector<T>::copyFrom(T* const A,Rank lo,Rank hi){
 //空间不足时候扩容
 template<typename T>
 void Vector<T>::expand(){
-    T* ex=new T(_capacity = _size+10);
-    ex.copyFrom(_elem,0 ,_size);
-    _elem=ex;
+    if(_size < _capacity) return;
+    if(_capacity < DEFAULT_CAPACITY) _capacity =DEFAULT_CAPACITY;
+    T*oldElem = _elem;
+    _elem = new T[_capacity<<=1];
+    for(int i = 0 ; i < _size ; i++) _elem[i]=oldElem[i];
+    delete [] oldElem;
 }
 
 
 //装填因子过小时压缩
 template<typename T>
 void Vector<T>::shrink(){
-    T* sh=new T(_capacity = _size+10);
-    sh.copyFrom(_elem,0 ,_size);
-    _elem=sh;
+    if(_capacity < DEFAULT_CAPACITY << 1) return;
+    if(_size<<2 > _capacity) return;
+    T* oldElem=_elem; _elem = new T[_capacity>>=1];
+    for(int i = 0 ; i< _size;i++) _elem[i]=oldElem[i];
+    delete [] oldElem;
 }
 
 
@@ -167,10 +177,141 @@ void Vector<T>::heapSort(Rank lo,Rank hi ){
     ...
 }
 
-
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//###############公有变量定义###
 
 //判断是否排序
 template<typename T>
 int Vector<T>::disordered() const{
-    
+    int sorted = 1;
+    for(int i = 0 ; i < _size-1 ; i++){
+        if(_elem[i]>_elem[i+!]){
+            sorted = -1 ;
+            return sorted;
+        }
+    }
+    return sorted;
+}
+
+
+//无序向量区间查找
+template<typename T>
+Rank Vector<T>::find(T const& e,Rank lo ,Rank hi)const{
+    Rank i=lo;
+    bool finded=false;
+    while(i<hi && !finded){
+        if(e=_elem[i++]){
+            finded = true;
+            return i-1;
+        }
+    }
+    return -1
+
+}
+
+
+//有序向量区间查找
+
+template<typename T>
+Rank Vector<T>:: search(T const& e,Rank lo ,Rank hi )const{
+    Rank i=lo;
+    bool finded=false;
+    while(i<hi && !finded){
+        if(e=_elem[i]){
+            finded = true;
+            return i-1;
+        }
+        else{
+            if(e<_elem[i]){
+                return -1;
+            }
+            else i++;
+        }
+    }
+}
+
+
+//向量模板类下标的重载
+template<typename T>
+T& Vector<T>::operator[](Rank r ) const{
+    return _elem[r];
+}
+
+//向量模板类赋值符的重载
+template<typename T>
+Vector<T>& Vector<T>:: operator=(Vector<T> const& V){
+    if(_elem) delete [] _elem;
+    copyFrom(V._elem,0,V.size());
+    return *this;
+
+}
+
+template<typename T>
+T Vector<T>:: remove(Rank r){
+    T e = _elem[r];
+    remove(r,r+1);
+    return e;
+}
+
+template<typename T>
+int Vector<T>::remove(Rank lo ,Rank hi){
+    if(lo==hi) return 0;
+    while(hi<_size) _elem[lo++]=_elem[hi++];
+    _size=lo;shrink();
+    return hi-lo;
+}
+
+
+template<typename T>
+Rank Vector<T>::insert(Rank r , T const& e){
+    expand();
+    T* oldElem=_elem;
+    _elem=new T[capacity<<=1];
+    for(int i ; i < _size+1 ; i++){
+        if (i=r) _elem[i]=oldElem[i++];
+        else _elem[i]=oldElem[i];
+    }
+    _size++;shrink();
+    return r
+}
+
+
+template<typename T>
+void  Vector<T>::sort(Rank lo , Rank hi){
+    quickSort(lo,hi);
+}
+
+template<typename T>
+void Vector<T>::unsort(Rank lo ,Rank hi){
+    T*V = _elem +lo;
+    for(Rank i = hi -lo;i>0;i--){
+        swap(V[i-1],V[rand()%i]);
+    }
+}
+
+
+template<typename T>int Vector<T>::deduplicate(){
+    int oldSize = _size;
+    Rank i = 0;
+    while(i<_size) (0>find(_elem[i],i,oldSize))?
+    i++:remove(i);
+    return oldSize-_size;
+}
+
+
+
+template<typename T> int Vector<T>::uniquify(){
+    Rank i = 0, j = 0;
+    while(j++<_size){
+        if(_elem[i]!=_elem[j]) 
+         _elem[i++]=elem[j];
+    }_size=++i;shrink();
+    return j-i;
+}
+//交换
+template<typename T>
+void swap(T*p1,T*p2){
+    T temp = *p1;
+    *p1 = *p2;
+    *p2 = temp;
 }
