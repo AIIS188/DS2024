@@ -1,7 +1,7 @@
 #include<iostream>
 #include<math.h>
 #include<random>
-
+#include<ctime>
 using namespace std;
 
 typedef int Rank;
@@ -43,11 +43,20 @@ template <typename T> class Vector{
         Rank insert(T const& e){ return insert(_size,e);}
         void sort(Rank lo , Rank hi);
         void sort(){sort(0,_size);};
+        void msort(Rank lo ,Rank hi);
+        void msort(){msort(0,_size);};
+        void qsort(Rank lo, Rank hi );
+        void qsort(){qsort(0,_size);};
         void unsort(Rank lo ,Rank hi);
         void unsort(){ unsort(0,_size);}
+        void resort(Rank lo,Rank hi );//逆序排列
+        void resort(){resort(0,_size);};
         int deduplicate();//无序去重
         int uniquify();//有序去重
         void setsize(int n){ _size=n;};
+        Vector<T> findmodel(double m1,double m2,Rank lo,Rank hi);
+        Vector<T> findmodel(double m1,double m2){Vector<T> A=findmodel(m1,m2,0,_size);return A;};
+
 //遍历
         void traverse(void(*)(T&));//遍历（使用函数指针，只读或局部修改）
         template<typename VST> void traverse(VST&);//遍历（使用函数对象，可全局性修改）
@@ -118,22 +127,22 @@ void Vector<T>::bubbleSort(Rank lo , Rank hi ){
 }
 
 
-//归并算法
+//归并算法 
 template<typename T>
 void Vector<T>::merge(Rank lo , Rank mi , Rank hi ){
-    Vector A(*this,_size);
-    int i=lo,j=mi,k=hi,l=lo;
-    while(i<mi && j<k){
+    Vector A(_elem,_size);
+    int i=lo,j=mi;
+    while(i<mi && j<hi){
         if(A[i]<A[j]){
-            _elem[l++]=A[i++];
+            _elem[lo++]=A[i++];
         }
-        else{_elem[l++]=A[j++];}
+        else{_elem[lo++]=A[j++];}
         }
     while(i<mi){
-        _elem[l++]=A[i++];
+        _elem[lo++]=A[i++];
     }
     while(j<hi){
-        _elem[l++]=A[j++];
+        _elem[lo++]=A[j++];
     }
     
 }
@@ -143,12 +152,11 @@ void Vector<T>::merge(Rank lo , Rank mi , Rank hi ){
 template<typename T>
 void Vector<T>::mergeSort(Rank lo ,Rank hi){
     Rank mi;
-    if(lo<hi){
-        mi=(hi-lo)/2;
-        mergeSort(lo,mi);
-        mergeSort(mi,hi);
-        merge(lo,mi,hi);
-    }
+    mi=lo+(hi-lo)/2;
+    if(lo==mi) return;
+    else{ mergeSort(lo,mi);mergeSort(mi,hi);merge(lo,mi,hi);};
+
+    
 }
 
 
@@ -224,7 +232,7 @@ Rank Vector<T>:: search(T const& e,Rank lo ,Rank hi )const{
     Rank i=lo;
     bool finded=false;
     while(i<hi && !finded){
-        if(e=_elem[i]){
+        if(e==_elem[i]){
             finded = true;
             return i-1;
         }
@@ -291,6 +299,27 @@ void  Vector<T>::sort(Rank lo , Rank hi){
     bubbleSort(lo,hi);
 }
 
+
+template<typename T>
+void Vector<T>::msort(Rank lo,Rank hi){
+    mergeSort(lo,hi);
+}
+
+
+template<typename T>
+void Vector<T>::resort(Rank lo ,Rank hi){
+    sort(lo,hi);
+    Rank i =lo,j=hi-1;
+    while(i!=j){
+        swap(_elem[i++],_elem[j--]);
+    }
+}
+
+template<typename T>
+void Vector<T>::qsort(Rank lo , Rank hi ){
+    quickSort(lo,hi);
+}
+
 template<typename T>
 void Vector<T>::unsort(Rank lo ,Rank hi){
     T*V = _elem +lo;
@@ -303,8 +332,8 @@ void Vector<T>::unsort(Rank lo ,Rank hi){
 template<typename T>int Vector<T>::deduplicate(){
     int oldSize = _size;
     Rank i = 0;
-    while(i<_size) (0>find(_elem[i],i+1,oldSize))?
-    i++:remove(i);
+    while(i+1<_size) (0>find(_elem[i],i+1,oldSize))?
+    i++:remove(i);shrink();
     return oldSize-_size;
 }
 
@@ -312,11 +341,12 @@ template<typename T>int Vector<T>::deduplicate(){
 
 template<typename T> int Vector<T>::uniquify(){
     Rank i = 0, j = 0;
+    _elem[i]=_elem[0];
     while(j++<_size){
         if(_elem[i]!=_elem[j]) 
-         _elem[i++]=_elem[j];
-    }_size=++i;shrink();
-    return j-i;
+         _elem[++i]=_elem[j];
+    }_size=i;shrink();
+    return j-i-1;  
 }
 //交换
 template<typename T>
@@ -339,24 +369,34 @@ void Vector<T>::traverse(VST &visit){
     for(int i = 0;i<_size;i++){
         visit(_elem[i]);
     }
-}
+};
+
 
 
 class Complex{
 private:
     double _real;
     double _image;
+    double _model;
 public:
-    Complex(double r=0 ,double i=0){_real=r;_image=i;};
-    void print(){cout<<_real<<"+"<<_image<<"i";}
-    void reset(double r , double i ){_real = r ; _image = i;};
-    bool operator!=(const Complex& other) const{ return (_real != other._real) || (_image != other._image);}
-    bool operator==(const Complex& other) const{ return (_real == other._real) && (_image == other._image);};
-    bool operator<(const Complex& other) const{ if(_real*_real+_image*_image==other._real*other._real+other._image*other._image) return _real<other._real;
-        else return _real*_real+_image*_image<other._real*other._real+other._image*other._image;}
-    bool operator>(const Complex& other) const{if(_real*_real+_image*_image==other._real*other._real+other._image*other._image) return _real>other._real;
-        else return _real*_real+_image*_image>other._real*other._real+other._image*other._image;}
+    Complex(double r=0 ,double i=0){_real=r;_image=i;_model=sqrt(_real*_real+_image*_image);};
+    Complex(Complex const& A){_real=A._real;_image=A._image;_model=A._model;};
+    void print(){cout<<_real<<"+"<<_image<<"i";};
+    void reset(double r , double i ){_real = r ; _image = i;_model=sqrt(_real*_real+_image*_image);};
+    bool operator !=(const Complex& other) const{ return (_real != other._real) || (_image != other._image);};
+    bool operator ==(const Complex& other) const{ return (_real == other._real) && (_image == other._image);};
+    bool operator <(const Complex& other) const{ if(_real*_real+_image*_image==other._real*other._real+other._image*other._image) return _real<other._real;
+        else return _real*_real+_image*_image<other._real*other._real+other._image*other._image;};
+    bool operator >(const Complex& other) const{if(_real*_real+_image*_image==other._real*other._real+other._image*other._image) return _real>other._real;
+        else return _real*_real+_image*_image>other._real*other._real+other._image*other._image;};
+    double model(){return _model;};
 };//Complex
+
+class ComplexVector: public Vector<Complex>{
+
+};//复数向量的继承，重载一下特殊的查找函数
+
+
 
 void set1(Complex a){
     a.reset(1,2);
@@ -366,34 +406,97 @@ void allprint1(Complex a){
     a.print();
     cout<<" ";
 }
+template<typename T>
+Vector<T> Vector<T>::findmodel(double m1,double m2,Rank lo,Rank hi){
+    T* B = new T[(hi-lo)*2];
+    Rank i=lo,j=0;
+    for(int i = 0 ; i < hi ; i++){
+        cout<<_elem[i].model()<<"   ";
+        if(_elem[i].model()>=m1 && _elem[i].model()<m2){ B[j++]=_elem[i];
+        }
+    }
+    Vector<T> A(B,j);
+    A.traverse(allprint1);
+    return A;
+}
 
 int main(){
-    Vector<Complex> A(10);
-    for(int i;i<10;i++){
-        int j=rand()%100,k=rand()%100;
+    //（1）
+    Vector<Complex> A(10000);
+    for(int i;i<10000;i++){
+        int j=rand()%100*rand()%100,k=rand()%100*rand()%100;
         A[i].reset(j,k);  
     }
-    A.setsize(10);
-    A.sort();
-    A.traverse(allprint1);
-    cout<<"\n";
+    A.setsize(10000);
     Complex B(10,10);
     //插入
     A.insert(3,B);
     A.insert(4,B);
     A.insert(5,B);
-    A.traverse(allprint1);
-    cout<<"\n";
+    //无序去重
+    A.deduplicate();
+    A.msort();
     //置乱
     // A.unsort();
     // A.traverse(allprint1);
-    cout<<"\n"<<A.find(B)<<"\n";
+    // cout<<"\n"<<A.find(B)<<"\n";
     //删除
     // A.remove(0);
     // A.traverse(allprint1);
     //无序去重
     // A.deduplicate();
-    //有序去重
-    A.uniquify();
-    A.traverse(allprint1);
+    // 有序去重
+    // A.uniquify();
+    
+    // A.traverse(allprint1);
+    //（2）
+    Vector<Complex> C(A),D(A);//逆序，乱序向量生成
+    C.resort();
+    D.unsort();
+//时间对象声明
+    clock_t start_time,end_time;
+    double total_time;
+//顺序排序时间
+    Vector<Complex> A1(A),A2(A);
+    start_time=clock();
+    A1.sort();//冒泡排序
+    end_time=clock();
+    total_time= double(end_time - start_time) / CLOCKS_PER_SEC;
+    cout<<"冒泡顺序排序所用时间："<<total_time<<"\n";
+
+    start_time=clock();
+    A2.msort();
+    end_time=clock();
+    total_time= double(end_time - start_time) / CLOCKS_PER_SEC;
+    cout<<"归并顺序排序所用时间："<<total_time<<"\n";
+//乱序排序时间
+    Vector<Complex> D1(D),D2(D);
+    start_time=clock();
+    D1.sort();
+    end_time=clock();
+    total_time= double(end_time - start_time) / CLOCKS_PER_SEC;
+    cout<<"冒泡乱序排序所用时间："<<total_time<<"\n";
+
+    start_time=clock();
+    D2.msort();
+    end_time=clock();
+    total_time= double(end_time - start_time) / CLOCKS_PER_SEC;
+    cout<<"归并乱序排序所用时间："<<total_time<<"\n";
+//逆序排序时间
+    Vector<Complex> C1(C),C2(C);
+    start_time=clock();
+    C1.sort();
+    end_time=clock();
+    total_time= double(end_time - start_time) / CLOCKS_PER_SEC;
+    cout<<"冒泡逆序排序时间：" <<total_time<<"\n";
+
+    start_time=clock();
+    C2.msort();
+    end_time=clock();
+    total_time= double(end_time - start_time) / CLOCKS_PER_SEC;
+    cout<<"归并逆序排序时间："<<total_time<<"\n";
+//(3)返回子向量输出验证
+    Vector<Complex> search_A;
+    search_A=A.findmodel(100,120);
+    search_A.traverse(allprint1);
 };
