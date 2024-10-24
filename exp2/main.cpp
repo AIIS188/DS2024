@@ -121,7 +121,30 @@ float evaluate(char* S) {
     }
     return opnd.pop(); // 返回最终结果
 };
+int largestRectangleArea(Vector<int>& heights) {
+    Stack<int> A; // 记录柱子的下标
+    int MaxArea = 0;
+    int n = heights.size(); // 获取数组长度
 
+    for (int i = 0; i <= n; i++) {
+        // 如果当前柱子比栈顶柱子矮，或者已经处理到最后一个柱子
+        while (!A.empty() && (i == n || heights[i] < heights[A.top()])) {
+            // 弹出栈顶柱子，计算以该柱子为高的矩形面积
+            int height = heights[A.top()];
+            A.pop();
+
+            // 计算宽度：如果栈为空，说明这个柱子是最左侧柱子，否则是栈顶柱子右边的柱子
+            int width = A.empty() ? i : i - A.top() - 1;
+
+            // 更新最大面积
+            MaxArea = max(MaxArea, height * width);
+        }
+        // 将当前柱子的下标压入栈
+        A.push(i);
+    }
+
+    return MaxArea;
+}
 using namespace std;
 
 int main() {
@@ -130,6 +153,26 @@ int main() {
     cout << "输入表达式: " << s << endl;
     float result = evaluate(m);
     cout << "计算结果: " << result << endl; // 输出计算结果
-    return 0;
+    
+
+
+    
+    Vector<int> heights ;
+    heights.insert(2);
+    heights.insert(4);
+    heights.insert(6);
+    heights.insert(4);
+    heights.insert(3);
+    heights.insert(1);
+    cout<<largestRectangleArea(heights)<<endl;
+
+    for(int i = 0  ; i < 10 ; i++){
+        int l = rand()%105;
+        Vector<int> h;
+        for(int j = 0 ; j<l;j++){
+            h.insert(rand()%104);
+        }
+        cout<<largestRectangleArea(h)<<endl;
+    }
 
 }
