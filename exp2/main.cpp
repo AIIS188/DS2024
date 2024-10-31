@@ -1,21 +1,27 @@
 #include <iostream>
 #include <cctype> // for isdigit
-#include "D:\数据结构\DS24\exp2\Stack.h" // 请根据实际路径调整
-#define N_OPTR 9
+#include "D:\DS24\DS24\exp2\Stack.h" // 请根据实际路径调整
+#define N_OPTR 12
 
-typedef enum { ADD, SUB, MUL, DIV, POW, FAC, L_P, R_P, EOE } Operator;
+// 扩展运算符枚举，增加 SIN、COS 和 LOG
+typedef enum { ADD, SUB, MUL, DIV, POW, FAC, SIN, COS, LOG, L_P, R_P, EOE } Operator;
 
 const char pri[N_OPTR][N_OPTR] = {
-    '>', '>', '<', '<', '<', '<', '<', '>', '>',
-    '>', '>', '<', '<', '<', '<', '<', '>', '>',
-    '>', '>', '>', '>', '<', '<', '<', '>', '>',
-    '>', '>', '>', '>', '<', '<', '<', '>', '>',
-    '>', '>', '>', '>', '>', '<', '<', '>', '>',
-    '>', '>', '>', '>', '>', '>', ' ', '>', '>',
-    '<', '<', '<', '<', '<', '<', '<', '=', ' ',
-    ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
-    '<', '<', '<', '<', '<', '<', '<', ' ', '=',
+    //         +      -      *      /      ^      !      s      c      l      (      )      \0
+    /* +  */  '>',   '>',   '<',   '<',   '<',   '<',   '<',   '<',   '<',   '>',   '>',   '>',
+    /* -  */  '>',   '>',   '<',   '<',   '<',   '<',   '<',   '<',   '<',   '>',   '>',   '>',
+    /* *  */  '>',   '>',   '>',   '>',   '<',   '<',   '<',   '<',   '<',   '>',   '>',   '>',
+    /* /  */  '>',   '>',   '>',   '>',   '<',   '<',   '<',   '<',   '<',   '>',   '>',   '>',
+    /* ^  */  '>',   '>',   '>',   '>',   '>',   '<',   '<',   '<',   '<',   '>',   '>',   '>',
+    /* !  */  '>',   '>',   '>',   '>',   '>',   '>',   ' ',   ' ',   ' ',   '>',   '>',   '>',
+    /* s  */  '>',   '>',   '>',   '>',   '<',   ' ',   '>',   ' ',   ' ',   '<',   '>',   '>',
+    /* c  */  '>',   '>',   '>',   '>',   '<',   ' ',   ' ',   '>',   ' ',   '<',   '>',   '>',
+    /* l  */  '>',   '>',   '>',   '>',   '<',   ' ',   ' ',   ' ',   '>',   '<',   '>',   '>',
+    /* (  */  '<',   '<',   '<',   '<',   '<',   '<',   '<',   '<',   '<',   '<',   '=',   ' ',
+    /* )  */  ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',   ' ',
+    /* \0 */  '<',   '<',   '<',   '<',   '<',   '<',   '<',   '<',   '<',   '<',   ' ',   '='
 };
+
 
 
 
@@ -31,6 +37,9 @@ Operator charToOperator(char op) {
         case '(':return L_P;
         case ')':return R_P;
         case '\0':return EOE;
+        case 's':return SIN;
+        case 'c':return COS;
+        case 'l':return LOG;
         default: throw std::invalid_argument("未知操作符");
     }
 }
@@ -71,6 +80,15 @@ float calcu(float opnd1, char op, float opnd2) {
         case '-': return opnd1 - opnd2;
         case '*': return opnd1 * opnd2;
         case '/': return opnd1 / opnd2;
+        case '!': {
+            float result=1;
+            for(float i =1;i<=opnd1;i++){
+                result*=i;
+            }
+        }
+        case 's':return sin(opnd1);
+        case 'c':return cos(opnd1);
+        case 'l':return log(opnd1);
         // Add cases for POW, FAC, etc.
         default: return 0; // Error
     }
@@ -129,17 +147,12 @@ int largestRectangleArea(Vector<int>& heights) {
     for (int i = 0; i <= n; i++) {
         // 如果当前柱子比栈顶柱子矮，或者已经处理到最后一个柱子
         while (!A.empty() && (i == n || heights[i] < heights[A.top()])) {
-            // 弹出栈顶柱子，计算以该柱子为高的矩形面积
             int height = heights[A.top()];
             A.pop();
-
-            // 计算宽度：如果栈为空，说明这个柱子是最左侧柱子，否则是栈顶柱子右边的柱子
             int width = A.empty() ? i : i - A.top() - 1;
-
-            // 更新最大面积
             MaxArea = max(MaxArea, height * width);
         }
-        // 将当前柱子的下标压入栈
+        
         A.push(i);
     }
 

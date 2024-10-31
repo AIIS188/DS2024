@@ -83,6 +83,7 @@ void Vector<T>::copyFrom(T* const A,Rank lo,Rank hi){
 template<typename T>
 void Vector<T>::expand(){
     if(_size < _capacity) return;
+
     if(_capacity < DEFAULT_CAPACITY) _capacity =DEFAULT_CAPACITY;
     T*oldElem = _elem;
     _elem = new T[_capacity<<=1];

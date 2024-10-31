@@ -2,7 +2,7 @@
 #include<math.h>
 #include<random>
 #include<ctime>
-#include "D:\数据结构\DS24\exp1\Vertor.h"
+#include "D:\DS24\DS24\exp1\Vertor.h"
 
 
 
@@ -12,10 +12,12 @@ int main(){
     //（1）
     Vector<Complex> A(10000);
     for(int i;i<10000;i++){
+        
         int j=rand()%100*rand()%100,k=rand()%100*rand()%100;
         A[i].reset(j,k);  
     }
     A.setsize(10000);
+    
     Complex B(10,10);
     //插入
     A.insert(3,B);

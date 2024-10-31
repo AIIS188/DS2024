@@ -1,4 +1,4 @@
-#include "D:\数据结构\DS24\exp1\Vertor.h"
+#include "D:\DS24\DS24\exp1\Vertor.h"
 
 
 template<typename T> class Stack:public Vector<T>{

@@ -1,7 +1,32 @@
 {
-    // ä½¿ç”¨ IntelliSense äº†è§£ç›¸å…³å±æ€§ã€‚ 
-    // æ‚¬åœä»¥æŸ¥çœ‹ç°æœ‰å±æ€§çš„æè¿°ã€‚
-    // æ¬²äº†è§£æ›´å¤šä¿¡æ¯ï¼Œè¯·è®¿é—®: https://go.microsoft.com/fwlink/?linkid=830387
-    "version": "0.2.0",
-    "configurations": []
+    "configurations": [
+        
+        {
+            "name": "C/C++: g++.exe Éú³ÉºÍµ÷ÊÔ»î¶¯ÎÄ¼ş",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${fileDirname}\\${fileBasenameNoExtension}.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${fileDirname}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "miDebuggerPath": "D:\\mingw64\\bin\\gdb.exe",
+            "setupCommands": [
+                {
+                    "description": "Îª gdb ÆôÓÃÕûÆë´òÓ¡",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "½«·´»ã±à·ç¸ñÉèÖÃÎª Intel",
+                    "text": "-gdb-set disassembly-flavor intel",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "C/C++: g++.exe Éú³É»î¶¯ÎÄ¼ş"
+        }
+    ],
+    "version": "2.0.0"
 }
