@@ -11,8 +11,8 @@ template <typename T> class Vector{
         Rank _size;int _capacity; T* _elem;
     protected:
         void copyFrom(T* const A,Rank lo,Rank hi);
-        void expand();//空间不足时候扩容
-        void shrink();//装填因子过小时压缩
+        void expand();//空间不足时��扩宄1�7
+        void shrink();//装填因子过小时压缄1�7
         bool bubble(Rank lo ,Rank hi);//扫描交换算法
         void bubbleSort(Rank lo , Rank hi);
         void merge(Rank lo , Rank mi,Rank hi );
@@ -59,7 +59,7 @@ template <typename T> class Vector{
 
 //遍历
         void traverse(void(*)(T&));//遍历（使用函数指针，只读或局部修改）
-        template<typename VST> void traverse(VST&);//遍历（使用函数对象，可全局性修改）
+        template<typename VST> void traverse(VST&);//遍历（使用函数对象，可全屢�性修改）
 };//Vector
 
 
@@ -79,7 +79,7 @@ void Vector<T>::copyFrom(T* const A,Rank lo,Rank hi){
 }
 
 
-//空间不足时候扩容
+//空间不足时��扩宄1�7
 template<typename T>
 void Vector<T>::expand(){
     if(_size < _capacity) return;
@@ -92,7 +92,7 @@ void Vector<T>::expand(){
 }
 
 
-//装填因子过小时压缩
+//装填因子过小时压缄1�7
 template<typename T>
 void Vector<T>::shrink(){
     if(_capacity < DEFAULT_CAPACITY << 1) return;
@@ -161,7 +161,7 @@ void Vector<T>::mergeSort(Rank lo ,Rank hi){
 }
 
 
-//轴点构造算法
+//轴点构��算泄1�7
 template<typename T>
 Rank Vector<T> ::partition(Rank lo,Rank hi ){
     T m=_elem[lo];
@@ -175,7 +175,7 @@ Rank Vector<T> ::partition(Rank lo,Rank hi ){
     return lo;
 }
 
-//快速排序
+//快��排庄1�7
 template<typename T>
 void Vector<T>::quickSort(Rank lo ,Rank hi ){
     if(lo<hi){
@@ -187,7 +187,7 @@ void Vector<T>::quickSort(Rank lo ,Rank hi ){
 }
 
 
-//堆排序
+//堆排庄1�7
 template<typename T>
 void Vector<T>::heapSort(Rank lo,Rank hi ){
     //...
@@ -254,7 +254,7 @@ T& Vector<T>::operator[](Rank r ) const{
     
 }
 
-//向量模板类赋值符的重载
+//向量模板类赋值符的重轄1�7
 template<typename T>
 Vector<T>& Vector<T>:: operator=(Vector<T> const& V){
     if(_elem) delete [] _elem;
@@ -389,7 +389,7 @@ public:
 
 class ComplexVector: public Vector<Complex>{
 
-};//复数向量的继承，重载一下特殊的查找函数
+};//复数向量的继承，重载丢�下特殊的查找函数
 
 
 
