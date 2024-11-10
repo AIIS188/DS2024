@@ -1,6 +1,6 @@
 #include "BinNode.h"
 #include "D:\DS24\DS24\exp2\Stack.h"
-
+#include <memory>
 
 template <typename T> class BinTree {
 protected:
@@ -19,6 +19,7 @@ public:
     BinNodePosi(T) attachAsLC ( BinNodePosi(T) x , BinTree<T>* &T);
     BinNodePosi(T) attachAsRC ( BinNodePosi(T) x , BinTree<T>* &T);
     int remove ( BinNodePosi(T) x);
+    void release(BinTree<T>* &S)£»
     BinTree<T>* secede( BinNodePosi(T) x);
     template <typename VST>
     void travLevel (VST& visit ) {if (_root ) _root->travLevel (visit);}
@@ -202,5 +203,4 @@ void travPost_I ( BinNodePosi(T) x , VST& visit ) {
 
 
 
-
-
+                  

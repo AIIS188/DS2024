@@ -102,7 +102,7 @@ template <typename T> ListNodePosi(T) List<T>:: insertB ( ListNodePosi(T) p, T c
 
 template <typename T> 
 ListNodePosi(T) ListNode<T>::insertAsPred ( T const& e ) {
-    ListNOdePosi(T) x = new ListNode ( e, pred, this );
+    ListNodePosi(T) x = new ListNode ( e, pred, this );
     pred->succ = x; pred = x;
     return x;
 }
