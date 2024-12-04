@@ -1,182 +1,144 @@
-
+#include "Graph.h"
+#include <vector>
 #include <iostream>
-#include <queue>
-#include "heap.h" 
-#include <limits>
-#include <algorithm>
 
-using namespace std;
 
-// 定义无限大的距离
-const int INF = numeric_limits<int>::max();
-
-// 边的结构体
-struct Edge {
-    int to;
-    int weight;
-    Edge(int t, int w) : to(t), weight(w) {}
-};
-
-// 图的类
-class Graph {
+template<typename Tv, typename Te>
+class GraphMatrix : public Graph<Tv, Te> {
 private:
-    int numVertices;
-    bool directed;
-    Vector<Vector<Edge>> adjList;
+    std::vector<Vertex<Tv>> V;
+    std::vector<std::vector<Edge<Te>*>> E;
 
 public:
-    // 构造函数
-    Graph(int vertices, bool isDirected = false) : numVertices(vertices), directed(isDirected), adjList(vertices) {}
+    GraphMatrix() { this->n = this->e = 0; }
 
-    // 添加边
-    void addEdge(int from, int to, int weight = 1) {
-        adjList[from].emplace_back(to, weight);
-        if (!directed) {
-            adjList[to].emplace_back(from, weight);
-        }
+    ~GraphMatrix() {
+        for (int j = 0; j < this->n; j++)
+            for (int k = 0; k < this->n; k++)
+                if (E[j][k]) delete E[j][k];
     }
 
-    // 获取邻接表
-    const Vector<Vector<Edge>>& getAdjList() const {
-        return adjList;
+    // Vertex Operations
+    virtual Tv& vertex(int i) { return V[i].data; }
+    virtual int inDegree(int i) { return V[i].inDegree; }
+    virtual int outDegree(int i) { return V[i].outDegree; }
+    
+    virtual int firstNbr(int i) { return nextNbr(i, this->n); }
+    
+    virtual int nextNbr(int i, int j) {
+        while ((j > -1) && (!exists(i, --j)));
+        return j;
     }
 
-    int getNumVertices() const {
-        return numVertices;
+    virtual VStatus& status(int i) { return V[i].status; }
+    virtual int& dTime(int i) { return V[i].dTime; }
+    virtual int& fTime(int i) { return V[i].fTime; }
+    virtual int& parent(int i) { return V[i].parent; }
+    virtual int& priority(int i) { return V[i].priority; }
+
+    // Vertex Insertion and Removal
+    virtual int insert(Tv const& vertex) {
+        for (int j = 0; j < this->n; j++) 
+            E[j].push_back(nullptr);
+        this->n++;
+        
+        E.push_back(std::vector<Edge<Te>*>(this->n, nullptr));
+        
+        return V.size() - 1;
     }
 
-    // BFS
-    void BFS(int start) const {
-        Vector<bool> visited(numVertices, false);
-        queue<int> q;
-        q.push(start);
-        visited[start] = true;
-        cout << "BFS Traversal starting from vertex " << start << ": ";
-        while (!q.empty()) {
-            int current = q.front();
-            q.pop();
-            cout << current << " ";
-            for (const auto& edge : adjList[current]) {
-                if (!visited[edge.to]) {
-                    visited[edge.to] = true;
-                    q.push(edge.to);
-                }
+    virtual Tv remove(int i) {
+        // Remove incoming edges
+        for (int j = 0; j < this->n; j++)
+            if (exists(i, j)) { 
+                delete E[i][j]; 
+                V[j].inDegree--; 
             }
-        }
-        cout << endl;
+        
+        // Remove this vertex's row
+        E.erase(E.begin() + i);
+        this->n--;
+
+        // Remove outgoing edges and decrement degrees
+        for (int j = 0; j < this->n; j++)
+            if (exists(j, i)) { 
+                delete E[j][i]; 
+                V[j].outDegree--; 
+            }
+
+        Tv vBak = vertex(i);
+        V.erase(V.begin() + i);
+        return vBak;
     }
 
-    // DFS
-    void DFS(int start) const {
-        Vector<bool> visited(numVertices, false);
-        // 使用自定义栈替换std::stack
-        Stack<int> s;  
-        s.push(start);
-        cout << "DFS Traversal starting from vertex " << start << ": ";
-        while (!s.empty()) {
-            int current = s.top();
-            s.pop();
-            if (!visited[current]) {
-                visited[current] = true;
-                cout << current << " ";
-                // 为了保持与递归DFS相同的顺序，这里需要逆序添加邻接点
-                for (auto it = adjList[current].rbegin(); it != adjList[current].rend(); ++it) {
-                    if (!visited[it->to]) {
-                        s.push(it->to);
-                    }
-                }
-            }
-        }
-        cout << endl;
+    // Edge Operations
+    virtual bool exists(int i, int j) { 
+        return (0 <= i) && (i < this->n) && 
+               (0 <= j) && (j < this->n) && 
+               (E[i][j] != nullptr); 
     }
 
-    // Dijkstra 最短路径算法
-    void Dijkstra(int start) const {
-        Vector<int> dist(numVertices, INF);
-        dist[start] = 0;
-        // 优先级队列，按距离从小到大排列
-        priority_queue<pair<int, int>, Vector<pair<int, int>>, std::greater<pair<int, int>>> pq;
-        pq.emplace(0, start);
+    virtual EStatus& status(int i, int j) { return E[i][j]->status; }
+    virtual Te& edge(int i, int j) { return E[i][j]->data; }
+    virtual int& weight(int i, int j) { return E[i][j]->weight; }
 
-        while (!pq.empty()) {
-            int currentDist = pq.top().first;
-            int u = pq.top().second;
-            pq.pop();
-            if (currentDist > dist[u]) continue;
-
-            for (const auto& edge : adjList[u]) {
-                int v = edge.to;
-                int weight = edge.weight;
-                if (dist[u] + weight < dist[v]) {
-                    dist[v] = dist[u] + weight;
-                    pq.emplace(dist[v], v);
-                }
-            }
-        }
-
-        // 输出结果
-        cout << "Shortest distances from vertex " << start << ":" << endl;
-        for (int i = 0; i < numVertices; ++i) {
-            if (dist[i] == INF)
-                cout << "Vertex " << i << ": INF" << endl;
-            else
-                cout << "Vertex " << i << ": " << dist[i] << endl;
-        }
+    virtual void insert(Te const& edge, int w, int i, int j) {
+        if (exists(i, j)) return;
+        
+        E[i][j] = new Edge<Te>(edge, w);
+        this->e++;
+        V[i].outDegree++;
+        V[j].inDegree++;
     }
 
-    void PrimMST() const ｛
-        Vector<bool> inMST(numVertices, false);
-        // 用于存储结果的边
-        Vector<pair<int, int>> mstEdges;
-        // 优先级队列，存储 (权重, 目标顶点, 来自哪个顶点)
-        Vector<int> parent(numVertices, -1);
-        // 优先级队列
-        priority_queue<pair<int, int>, Vector<pair<int, int>>, std::greater<pair<int, int>>> pq;
-        // 从顶点0开始
-        pq.emplace(0, 0);
-
-        while (!pq.empty()) {
-            int weight = pq.top().first;
-            int u = pq.top().second;
-            pq.pop();
-            if (inMST[u]) continue;
-            inMST[u] = true;
-            if (parent[u] != -1) {
-                mstEdges.emplace_back(parent[u], u);
-            }
-            for (const auto& edge : adjList[u]) {
-                int v = edge.to;
-                if (!inMST[v]) {
-                    pq.emplace(edge.weight, v);
-                    if (parent[v] == -1 || edge.weight < adjList[parent[v]][v].weight) {
-                        parent[v] = u;
-                    }
-                }
-            }
-        }
-
-        // 输出结果
-        cout << "Minimum Spanning Tree edges:" << endl;
-        for (const auto& edge : mstEdges) {
-            cout << edge.first << " - " << edge.second << endl;
-        }
+    virtual Te remove(int i, int j) {
+        Te eBak = edge(i, j);
+        delete E[i][j];
+        E[i][j] = nullptr;
+        
+        this->e--;
+        V[i].outDegree--;
+        V[j].inDegree--;
+        
+        return eBak;
     }
 };
 
-int main() {
-    Graph g(6, false);
-    g.addEdge(0, 1, 4);
-    g.addEdge(0, 2, 3);
-    g.addEdge(1, 2, 1);
-    g.addEdge(1, 3, 2);
-    g.addEdge(2, 3, 4);
-    g.addEdge(3, 4, 2);
-    g.addEdge(4, 5, 6);
-    g.addEdge(2, 5, 5);
-    g.BFS(0);
-    g.DFS(0);
-    g.Dijkstra(0);
-    g.PrimMST();
+void main(){
+    GraphMatrix<std::string, int> graph;
 
-    return 0;
+    // Insert vertices
+    int cityA = graph.insert("New York");
+    int cityB = graph.insert("Los Angeles");
+    int cityC = graph.insert("Chicago");
+    int cityD = graph.insert("Houston");
+    int cityE = graph.insert("Phoenix");
+
+    // Insert edges (with weights representing distance or cost)
+    graph.insert(1, 1000, cityA, cityB);  // New York to Los Angeles
+    graph.insert(1, 800, cityA, cityC);   // New York to Chicago
+    graph.insert(1, 1400, cityB, cityD);  // Los Angeles to Houston
+    graph.insert(1, 500, cityC, cityD);   // Chicago to Houston
+    graph.insert(1, 300, cityC, cityE);   // Chicago to Phoenix
+    graph.insert(1, 600, cityD, cityE);   // Houston to Phoenix
+
+    // BFS Traversal
+    std::cout << "BFS Traversal starting from New York:\n";
+    graph.bfs(cityA);
+
+    // DFS Traversal
+    std::cout << "\nDFS Traversal starting from New York:\n";
+    graph.dfs(cityA);
+
+    // Dijkstra's Shortest Path
+    std::cout << "\nDijkstra's Shortest Path from New York:\n";
+    graph.dijkstra(cityA);
+
+    // Prim's Minimum Spanning Tree
+    std::cout << "\nPrim's Minimum Spanning Tree starting from New York:\n";
+    graph.prim(cityA);
 }
+
+
+
+
